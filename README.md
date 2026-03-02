@@ -8,8 +8,9 @@ Code for synthesizing SFT training data for a locally deployed character chatbot
 data_synthesis/
 ├── codes/
 │   ├── v2_feb_12/                        # Data generation pipeline
-│   │   ├── gen_conversations_shorter.py  # Generate conversations from outlines
-│   │   └── outline_conversation_together_s0.sh  # Example run script
+│   │   ├── gen_outlines.py               # Step 1: generate conversation outlines from cards
+│   │   ├── gen_conversations_shorter.py  # Step 2: generate full conversations from outlines
+│   │   └── outline_conversation_together_s0.sh  # Example run script (both steps)
 │   └── card_prepare/                     # Card expansion utilities (L1 → L2)
 │       ├── extend_user.py                # Expand user-side cards
 │       ├── extend_mio.py                 # Expand Mio-side cards
@@ -27,25 +28,51 @@ data_synthesis/
 
 ## Quick Start
 
-### Generate Conversations
-
 ```bash
-pip install openai tqdm
+pip install openai tqdm scikit-learn numpy
 
 export OPENAI_API_KEY="sk-..."
-
-cd data_synthesis/codes/v2_feb_12
-python gen_conversations_shorter.py \
-    --outlines ../../outlines/outlines_n200_s0.jsonl
 ```
+
+### Full Pipeline (Step 1 + Step 2)
+
+```bash
+# Run both steps together
+cd data_synthesis/codes/v2_feb_12
+bash outline_conversation_together_s0.sh
+```
+
+Or run each step separately:
+
+### Step 1 — Generate Outlines
+
+Samples from card_sets (user_profiles, scene, refusal) and asks the LLM to write conversation outlines.
+
+```bash
+python data_synthesis/codes/v2_feb_12/gen_outlines.py \
+    --num-conversations 200 --seed 0
+```
+
+Output: `data_synthesis/outlines/outlines_n200_s0.jsonl`
+
+### Step 2 — Generate Conversations
+
+Reads outlines and generates full multi-turn conversations.
+
+```bash
+python data_synthesis/codes/v2_feb_12/gen_conversations_shorter.py \
+    --outlines data_synthesis/outlines/outlines_n200_s0.jsonl
+```
+
+Output: `data_synthesis/v2_convs/conversations_n200_s0_shorter.jsonl`
 
 ### Expand Cards (Optional)
 
-```bash
-export OPENAI_API_KEY="sk-..."
+Expand L1 base cards to L2 detail cards using GPT:
 
-python codes/card_prepare/extend_user.py
-python codes/card_prepare/extend_mio.py
+```bash
+python data_synthesis/codes/card_prepare/extend_user.py
+python data_synthesis/codes/card_prepare/extend_mio.py
 ```
 
 ## Pre-generated Data
