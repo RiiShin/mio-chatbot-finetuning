@@ -1,0 +1,11 @@
+{
+  "mio_sft_train": {
+    "file_name": "sft_train.json",
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations",
+      "system": "system",
+      "tools": "tools"
+    }
+  }
+}
